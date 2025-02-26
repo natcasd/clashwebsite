@@ -3,7 +3,8 @@ import Link from 'next/link';
 import MemberList from '../../components/member-list';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CLAN_TAG, getClanInfo, getClanMembers } from '@/utils/api';
+import { CLAN_TAG } from '@/utils/api';
+import { useApiCache } from '@/utils/ApiCacheContext';
 
 // Fallback mock data in case API fails
 const mockClan = {
@@ -107,15 +108,16 @@ const ClanPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const { fetchClanInfo, fetchClanMembers } = useApiCache();
 
   useEffect(() => {
-    const fetchClanData = async () => {
+    const loadClanData = async () => {
       setLoading(true);
       try {
-        const clanInfo = await getClanInfo();
+        const clanInfo = await fetchClanInfo();
         setClanData(clanInfo);
         
-        const memberData = await getClanMembers();
+        const memberData = await fetchClanMembers();
         // Transform API data to match our component's expected format
         const formattedMembers = memberData.map((member: any) => ({
           id: member.tag.replace('#', ''),
@@ -136,8 +138,8 @@ const ClanPage: React.FC = () => {
       }
     };
 
-    fetchClanData();
-  }, []);
+    loadClanData();
+  }, [fetchClanInfo, fetchClanMembers]);
 
   if (loading) {
     return (

@@ -3,6 +3,7 @@ import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Layout from '../components/Layout';
+import { ApiCacheProvider } from '../utils/ApiCacheContext';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,9 +14,11 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <ApiCacheProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </ApiCacheProvider>
     </>
   );
 }

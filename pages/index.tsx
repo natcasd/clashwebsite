@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CLAN_TAG, getClanInfo } from '@/utils/api';
+import { CLAN_TAG } from '@/utils/api';
+import { useApiCache } from '@/utils/ApiCacheContext';
 
 const Home: React.FC = () => {
   const [clanName, setClanName] = useState('Clash Champions');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { fetchClanInfo } = useApiCache();
 
   useEffect(() => {
-    const fetchClanInfo = async () => {
+    const loadClanInfo = async () => {
       try {
-        const clanInfo = await getClanInfo();
+        const clanInfo = await fetchClanInfo();
         if (clanInfo && clanInfo.name) {
           setClanName(clanInfo.name);
         }
@@ -25,8 +27,8 @@ const Home: React.FC = () => {
       }
     };
 
-    fetchClanInfo();
-  }, []);
+    loadClanInfo();
+  }, [fetchClanInfo]);
 
   return (
     <div className="space-y-12">

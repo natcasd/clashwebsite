@@ -3,7 +3,7 @@ import MemberList from '../../components/member-list';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getClanMembers } from '@/utils/api';
+import { useApiCache } from '@/utils/ApiCacheContext';
 
 // Fallback mock members in case API fails
 const mockMembers = [
@@ -62,12 +62,13 @@ const MembersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const { fetchClanMembers } = useApiCache();
 
   useEffect(() => {
-    const fetchMembers = async () => {
+    const loadMembers = async () => {
       setLoading(true);
       try {
-        const memberData = await getClanMembers();
+        const memberData = await fetchClanMembers();
         // Transform API data to match our component's expected format
         const formattedMembers = memberData.map((member: any) => ({
           id: member.tag.replace('#', ''),
@@ -88,8 +89,8 @@ const MembersPage: React.FC = () => {
       }
     };
 
-    fetchMembers();
-  }, []);
+    loadMembers();
+  }, [fetchClanMembers]);
 
   // Filter members based on search term
   const filteredMembers = members.filter(member => 

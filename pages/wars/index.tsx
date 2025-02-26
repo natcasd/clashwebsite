@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { getClanWarLog, getCurrentWar } from '@/utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseISO, format } from 'date-fns';
+import { useApiCache } from '@/utils/ApiCacheContext';
 
 const WarsPage: React.FC = () => {
   const [warLog, setWarLog] = useState<any[]>([]);
   const [currentWar, setCurrentWar] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { fetchWarLog, fetchCurrentWar } = useApiCache();
 
   useEffect(() => {
-    const fetchWarData = async () => {
+    const loadWarData = async () => {
       try {
-        const log = await getClanWarLog();
-        const current = await getCurrentWar();
+        const log = await fetchWarLog();
+        const current = await fetchCurrentWar();
         setWarLog(log);
         setCurrentWar(current);
       } catch (err) {
@@ -24,8 +25,8 @@ const WarsPage: React.FC = () => {
       }
     };
 
-    fetchWarData();
-  }, []);
+    loadWarData();
+  }, [fetchWarLog, fetchCurrentWar]);
 
   const formatDate = (dateString: string) => {
     try {
