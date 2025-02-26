@@ -1,34 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CLAN_TAG } from '@/utils/api';
-import { useApiCache } from '@/utils/ApiCacheContext';
+import { useClanInfo } from '@/utils/swr-hooks';
 
 const Home: React.FC = () => {
-  const [clanName, setClanName] = useState('Clash Champions');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { fetchClanInfo } = useApiCache();
-
-  useEffect(() => {
-    const loadClanInfo = async () => {
-      try {
-        const clanInfo = await fetchClanInfo();
-        if (clanInfo && clanInfo.name) {
-          setClanName(clanInfo.name);
-        }
-      } catch (err) {
-        console.error('Error fetching clan info for homepage:', err);
-        // We don't set an error state here to avoid showing an error on the homepage
-        // Just keep the default clan name
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadClanInfo();
-  }, [fetchClanInfo]);
+  const { data: clanInfo, error, isLoading } = useClanInfo();
+  const clanName = clanInfo?.name || 'Clash Champions';
 
   return (
     <div className="space-y-12">

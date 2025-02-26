@@ -1,32 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseISO, format } from 'date-fns';
-import { useApiCache } from '@/utils/ApiCacheContext';
+import { useWarLog, useCurrentWar } from '@/utils/swr-hooks';
+
+// Define war interface
+interface War {
+  opponent: {
+    name: string;
+  };
+  result: string;
+  endTime: string;
+}
 
 const WarsPage: React.FC = () => {
-  const [warLog, setWarLog] = useState<any[]>([]);
-  const [currentWar, setCurrentWar] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { fetchWarLog, fetchCurrentWar } = useApiCache();
-
-  useEffect(() => {
-    const loadWarData = async () => {
-      try {
-        const log = await fetchWarLog();
-        const current = await fetchCurrentWar();
-        setWarLog(log);
-        setCurrentWar(current);
-      } catch (err) {
-        console.error('Error fetching war data:', err);
-        setError('Failed to load war data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadWarData();
-  }, [fetchWarLog, fetchCurrentWar]);
+  const { data: warLog = [], error: warLogError, isLoading: warLogLoading } = useWarLog();
+  const { data: currentWar, error: currentWarError, isLoading: currentWarLoading } = useCurrentWar();
+  
+  const loading = warLogLoading || currentWarLoading;
+  const error = warLogError || currentWarError ? 'Failed to load war data. Please try again later.' : null;
 
   const formatDate = (dateString: string) => {
     try {
@@ -65,7 +56,7 @@ const WarsPage: React.FC = () => {
 
       <h2 className="text-2xl font-bold">War Log</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {warLog.map((war, index) => (
+        {warLog.map((war: War, index: number) => (
           <Card key={index}>
             <CardHeader>
               <CardTitle>{war.opponent.name}</CardTitle>

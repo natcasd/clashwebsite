@@ -3,7 +3,7 @@ import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import Layout from '../components/Layout';
-import { ApiCacheProvider } from '../utils/ApiCacheContext';
+import { SWRConfig } from 'swr';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -14,11 +14,17 @@ function MyApp({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <ApiCacheProvider>
+      <SWRConfig 
+        value={{
+          revalidateOnFocus: false,
+          revalidateOnReconnect: true,
+          dedupingInterval: 10000,
+        }}
+      >
         <Layout>
           <Component {...pageProps} />
         </Layout>
-      </ApiCacheProvider>
+      </SWRConfig>
     </>
   );
 }

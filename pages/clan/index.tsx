@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import MemberList from '../../components/member-list';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CLAN_TAG } from '@/utils/api';
-import { useApiCache } from '@/utils/ApiCacheContext';
+import { useClanInfo, useClanMembers } from '@/utils/swr-hooks';
+
+// Define types for API responses
+interface ClanLabel {
+  id: number;
+  name: string;
+}
 
 // Fallback mock data in case API fails
 const mockClan = {
@@ -103,43 +109,28 @@ const mockMembers = [
 ];
 
 const ClanPage: React.FC = () => {
-  const [clanData, setClanData] = useState(mockClan);
-  const [members, setMembers] = useState(mockMembers);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const { fetchClanInfo, fetchClanMembers } = useApiCache();
-
-  useEffect(() => {
-    const loadClanData = async () => {
-      setLoading(true);
-      try {
-        const clanInfo = await fetchClanInfo();
-        setClanData(clanInfo);
-        
-        const memberData = await fetchClanMembers();
-        // Transform API data to match our component's expected format
-        const formattedMembers = memberData.map((member: any) => ({
-          id: member.tag.replace('#', ''),
-          name: member.name,
-          role: member.role,
-          townHallLevel: member.townHallLevel,
-          trophies: member.trophies,
-          donations: member.donations,
-          donationsReceived: member.donationsReceived
-        }));
-        setMembers(formattedMembers);
-        setLastUpdated(new Date());
-      } catch (err) {
-        console.error('Error fetching clan data:', err);
-        setError('Failed to load clan data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadClanData();
-  }, [fetchClanInfo, fetchClanMembers]);
+  const { data: clanInfo, error: clanError, isLoading: clanLoading } = useClanInfo();
+  const { data: memberData, error: membersError, isLoading: membersLoading } = useClanMembers();
+  
+  const loading = clanLoading || membersLoading;
+  const error = clanError || membersError ? 'Failed to load clan data. Please try again later.' : null;
+  
+  // Use real data if available, otherwise fallback to mock data
+  const clanData = clanInfo || mockClan;
+  
+  // Transform API data to match our component's expected format
+  const members = memberData ? memberData.map((member: any) => ({
+    id: member.tag.replace('#', ''),
+    name: member.name,
+    role: member.role,
+    townHallLevel: member.townHallLevel,
+    trophies: member.trophies,
+    donations: member.donations,
+    donationsReceived: member.donationsReceived
+  })) : mockMembers;
+  
+  // Get current time for last updated display
+  const lastUpdated = new Date();
 
   if (loading) {
     return (
@@ -235,7 +226,7 @@ const ClanPage: React.FC = () => {
                     <CardContent className="p-4">
                       <h3 className="font-semibold text-gray-500 mb-1">Labels</h3>
                       <div className="flex flex-wrap gap-2 mt-1">
-                        {clanData.labels && clanData.labels.map(label => (
+                        {clanData.labels && clanData.labels.map((label: ClanLabel) => (
                           <span key={label.id} className="bg-clash-dark text-white px-2 py-1 rounded text-xs">
                             {label.name}
                           </span>
@@ -301,7 +292,7 @@ const ClanPage: React.FC = () => {
       </Card>
       
       <div className="text-center text-gray-500 text-sm">
-        <p>Last updated: {lastUpdated ? lastUpdated.toLocaleString() : 'Never'}</p>
+        <p>Last updated: {lastUpdated.toLocaleString()}</p>
       </div>
     </div>
   );

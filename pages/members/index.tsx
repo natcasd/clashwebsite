@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import MemberList from '../../components/member-list';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useApiCache } from '@/utils/ApiCacheContext';
+import { useClanMembers } from '@/utils/swr-hooks';
 
 // Fallback mock members in case API fails
 const mockMembers = [
@@ -54,52 +54,43 @@ const mockMembers = [
   }
 ];
 
+// Define member interface
+interface Member {
+  id: string;
+  name: string;
+  role: string;
+  townHallLevel: number;
+  trophies: number;
+  donations: number;
+  donationsReceived: number;
+}
+
 const MembersPage: React.FC = () => {
-  const [members, setMembers] = useState(mockMembers);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const { fetchClanMembers } = useApiCache();
-
-  useEffect(() => {
-    const loadMembers = async () => {
-      setLoading(true);
-      try {
-        const memberData = await fetchClanMembers();
-        // Transform API data to match our component's expected format
-        const formattedMembers = memberData.map((member: any) => ({
-          id: member.tag.replace('#', ''),
-          name: member.name,
-          role: member.role,
-          townHallLevel: member.townHallLevel,
-          trophies: member.trophies,
-          donations: member.donations,
-          donationsReceived: member.donationsReceived
-        }));
-        setMembers(formattedMembers);
-        setLastUpdated(new Date());
-      } catch (err) {
-        console.error('Error fetching member data:', err);
-        setError('Failed to load member data. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMembers();
-  }, [fetchClanMembers]);
+  
+  const { data: memberData, error, isLoading } = useClanMembers();
+  
+  // Transform API data to match our component's expected format
+  const rawMembers = memberData ? memberData.map((member: any) => ({
+    id: member.tag.replace('#', ''),
+    name: member.name,
+    role: member.role,
+    townHallLevel: member.townHallLevel,
+    trophies: member.trophies,
+    donations: member.donations,
+    donationsReceived: member.donationsReceived
+  })) : mockMembers;
 
   // Filter members based on search term
-  const filteredMembers = members.filter(member => 
+  const filteredMembers = rawMembers.filter((member: Member) => 
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     member.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Sort members based on sort criteria
-  const sortedMembers = [...filteredMembers].sort((a, b) => {
+  const sortedMembers = [...filteredMembers].sort((a: Member, b: Member) => {
     let comparison = 0;
     
     switch (sortBy) {
@@ -171,12 +162,12 @@ const MembersPage: React.FC = () => {
 
       <Card>
         <CardContent className="p-6">
-          <MemberList members={sortedMembers} loading={loading} error={error} />
+          <MemberList members={sortedMembers} loading={isLoading} error={error} />
         </CardContent>
       </Card>
 
       <div className="text-center text-gray-500 text-sm">
-        <p>Last updated: {lastUpdated ? lastUpdated.toLocaleString() : 'Never'}</p>
+        <p>Last updated: {new Date().toLocaleString()}</p>
       </div>
     </div>
   );
