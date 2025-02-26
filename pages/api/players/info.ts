@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.clashofclans.com/v1';
+const API_BASE_URL = 'https://proxy.royaleapi.dev/v1';
 
 export default async function handler(
   req: NextApiRequest,
