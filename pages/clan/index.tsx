@@ -154,7 +154,7 @@ const ClanPage: React.FC = () => {
       {/* Clan Header */}
       <Card>
         <CardHeader className="bg-clash-dark text-white">
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-col md:flex-row items-center space-x-6">
             <img 
               src={clanData.badgeUrls.medium} 
               alt={`${clanData.name} badge`} 

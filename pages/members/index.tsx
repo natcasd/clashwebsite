@@ -127,33 +127,31 @@ const MembersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold">Clan Members</h1>
-        <div className="flex space-x-4">
-          <div>
-            <Input
-              type="text"
-              placeholder="Search members..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div>
-            <select 
-              className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-clash-blue"
-              value={sortBy}
-              onChange={(e) => handleSort(e.target.value)}
-            >
-              <option value="name">Name</option>
-              <option value="role">Role</option>
-              <option value="townHallLevel">Town Hall Level</option>
-              <option value="trophies">Trophies</option>
-              <option value="donations">Donations</option>
-            </select>
-          </div>
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <Input
+            type="text"
+            placeholder="Search members..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-auto"
+          />
+          <select 
+            className="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-clash-blue w-full sm:w-auto"
+            value={sortBy}
+            onChange={(e) => handleSort(e.target.value)}
+          >
+            <option value="name">Name</option>
+            <option value="role">Role</option>
+            <option value="townHallLevel">Town Hall Level</option>
+            <option value="trophies">Trophies</option>
+            <option value="donations">Donations</option>
+          </select>
           <Button 
             variant="clash"
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="w-full sm:w-auto"
           >
             {sortOrder === 'asc' ? '↑ Ascending' : '↓ Descending'}
           </Button>
